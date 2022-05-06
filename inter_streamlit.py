@@ -8,6 +8,7 @@ from collections import defaultdict
 import pandas as pd
 import folium
 from streamlit_folium import folium_static
+from folium import plugins
 from googletrans import Translator
 from PIL import Image
 import seaborn as sns
@@ -161,10 +162,13 @@ def program_parser2(data):
     return data
 
 def pick_n_pretty(df):
-    output = df[['Link', 'program', 'university', 'country', 'city ', 'language','Score']]
+    output = df[['Link', 'program', 'university', 'country', 'city ', 'language', 'tuition_EUR','Score']]
     output["Link"] = output.apply(
             lambda row: make_clickable(row["program"], row["Link"]), axis=1)
-    return output
+    output['tuition_EUR'] = output['tuition_EUR'].fillna(0)
+    output['tuition_EUR'] = output.apply(lambda row: int(row['tuition_EUR']), axis=1)
+    return output#.style.applymap(lambda x: "background-color: red" if x==0 else "background-color: white")
+
 
 def get_recommendations(N, scores, data_path = 'main_data.xlsx'):
     top = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:N]
@@ -191,6 +195,14 @@ def mfap(recs1, df=latlong):
     map = folium.Map(width=1000,height=500,location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
     for index, location_info in uni_locations.iterrows():
         folium.Marker([location_info["lat"], location_info["long"]], popup=location_info["location"]).add_to(map)
+    return map
+
+def mfap_density_50(recs50, df=latlong): #try this function on the main page
+    latlong = recs50.merge(df, left_on='city ', right_on='location', how = 'inner')
+    uni_locations = latlong[["lat", "long"]]
+    map = folium.Map(width=1000,height=500,location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
+    cityArr = uni_locations.values
+    map.add_child(plugins.HeatMap(cityArr, radius=25))
     return map
 
 def sim_prog(df=progs, prog=None, N=5):
@@ -279,6 +291,16 @@ if page=='Найти программу🌍':
             lang = st.multiselect('Язык обучения', sorted(list(set(data['language'].dropna()))))
             cost = st.slider('Стоимость обучения, EUR', int(data['tuition_EUR'].min()), int(data['tuition_EUR'].max()), (0, 3000), step=50)
         with c2:
+            st.write('''
+            
+            
+            
+            ''') #to make row effects
+            st.write('')
+            st.write('')
+            st.write('')
+            st.write('')
+            st.write('')
             sentence = st.text_area("Введи текст для выявления своих предпочтений", value='Например: я знаю статистику, прошел курсы по анализу данных и интересуюсь финансовыми рынками')
             submit = st.form_submit_button(label="✨ Показать университеты")
             corpus = list(clean_words)
@@ -304,23 +326,35 @@ if page=='Найти программу🌍':
             with col3:
                 st.write('')
             recs = get_recs(str(text), N=int(number), mean=False)
+            recs50 = get_recs(str(text), N=50, mean=False)
             gif_runner.empty()  
-            recs1 = recs[(recs['language'].isin(lang)) & (recs['country'].isin(location)) & (recs['on_site']==on_site) & (recs['format']==pace) & (recs['tuition_EUR']>=min(cost)) & (recs['tuition_EUR']<=max(cost) )]
-            recs1 = pick_n_pretty(recs1)
-            df = recs1.style.background_gradient(
+            recs1 = recs[(recs['language'].isin(list(lang))) & (recs['country'].isin(list(location))) & (recs['on_site']==on_site) & (recs['format']==pace) & (recs['tuition_EUR']>=min(cost)) & (recs['tuition_EUR']<=max(cost))]
+            recs = pick_n_pretty(recs1)
+            df = recs.style.background_gradient(
                 cmap=cmGreen,
                 subset=[
                     "Score",
                 ],
             )
-            map  = mfap(recs1)
-            folium_static(map)
+            st.write(df.to_html(escape=False), unsafe_allow_html=True)
+            map2 = mfap_density_50(recs50)
+            map  = mfap(recs)
+            st.write('')
+            st.write('')
+            with st.expander('Посмотреть интерактивные карты'):
+                A, B = st.columns([5, 5])
+                with A:
+
+                    folium_static(map) 
+                with B:
+                    folium_static(map2)
 
         else: 
-            col1, col2, col3 = st.columns([5, 10, 5])
+            col1, col2, col3 = st.columns([10, 10, 10])
             with col2:
                 gif_runner = st.image("200.gif")
             recs1 = get_recs(str(text), N=int(number), mean=False)
+            recs50 = get_recs(str(text), N=50, mean=False)
             recs1 = pick_n_pretty(recs1)
             gif_runner.empty()
             df = recs1.style.background_gradient(
@@ -329,9 +363,18 @@ if page=='Найти программу🌍':
                     "Score",
                 ],
             )
-            st.write(df.to_html(escape=False), unsafe_allow_html=True)   
+            st.write(df.to_html(escape=False), unsafe_allow_html=True)  
+            map2 = mfap_density_50(recs50) 
             map  = mfap(recs1)
-            folium_static(map) 
+            st.write('')
+            st.write('')
+            with st.expander('Посмотреть интерактивные карты'):
+                A, B = st.columns([5, 5])
+                with A:
+
+                    folium_static(map) 
+                with B:
+                    folium_static(map2)
 if page=='Найти похожие программы🙌':
     c30, c31, c32 = st.columns([2.5, 1, 3])
 
