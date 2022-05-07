@@ -22,7 +22,7 @@ import seaborn as sns
 
 st.set_page_config(layout="wide")
 
-# Create a Google Authentication connection object
+#Create a Google Authentication connection object
 # scope = ['https://spreadsheets.google.com/feeds',
 #          'https://www.googleapis.com/auth/drive']
 
@@ -31,6 +31,7 @@ st.set_page_config(layout="wide")
 # client = Client(scope=scope,creds=credentials)
 # spreadsheetname = "Input_holder"
 # spread = Spread(spreadsheetname,client = client)
+
 
 #mean vectorizer
 class MeanEmbeddingVectorizer(object):
@@ -209,6 +210,35 @@ def sim_prog(df=progs, prog=None, N=5):
     df_one = df[df['Program1']==prog].sort_values(axis=0, by='cosine', ascending=False)
     return df_one.iloc[1:N+1,:].reset_index()
 
+def simple_output(map=True):
+    col1, col2, col3 = st.columns([10, 10, 10])
+    with col2:
+        gif_runner = st.image("200.gif")
+    recs1 = get_recs(str(text), N=int(number), mean=False)
+    recs50 = get_recs(str(text), N=50, mean=False)
+    recs1 = pick_n_pretty(recs1)
+    gif_runner.empty()
+    df = recs1.style.background_gradient(
+        cmap=cmGreen,
+        subset=[
+            "Score",
+        ],
+    )
+    st.write(df.to_html(escape=False), unsafe_allow_html=True)  
+    if map:
+        map2 = mfap_density_50(recs50) 
+        map  = mfap(recs1)
+        st.write('')
+        st.write('')
+        with st.expander('Посмотреть интерактивные карты'):
+            A, B = st.columns([5, 5])
+            with A:
+                st.write('Расположение запрашиваемых университетов')
+                folium_static(map) 
+            with B:
+                st.write('POI-распределение городов топ-50 соответствующих Вашему запросу программ')
+                folium_static(map2)
+
 
 with st.sidebar:
     col1, col2, col3 =st.columns([2.2,6, 2.2])
@@ -233,6 +263,7 @@ if page=='Приветствие👋':
     st.image(img)
   #  st.markdown(dash, unsafe_allow_html = True)
     st.markdown("## How it works? :thought_balloon:")
+    #st.write(spread.url)
     st.write(
         "For an in depth overview of the ML methods used and how I created this app, three blog posts are below."
         )
@@ -282,27 +313,24 @@ if page=='Найти программу🌍':
 
         ce, c1, ce, c2, c3 = st.columns([0.07, 2, 0.07, 4, 0.07])
         with c1:
-            st.subheader('Выбери параметры') 
-            number = st.number_input('Сколько рекоммендаций желаете увидеть на экране?', min_value=0, max_value=20, step=1, value=5)
+            st.subheader('Выберите параметры') 
+            number = st.number_input('Сколько рекоммендаций желаете увидеть на экране?', min_value=0, max_value=50, step=1, value=5)
             agree = st.checkbox('Выключить фильтрацию')
             location = st.multiselect('Страна', sorted(list(set(data['country'].dropna()))))
             on_site = st.selectbox('Темп обучения', ['Очное обучение', 'Заочное обучение','Очное обучение|Заочное обучение'])
             pace = st.selectbox('Форма обучения', ['Онлайн', 'Кампус','Кампус|Онлайн'])
             lang = st.multiselect('Язык обучения', sorted(list(set(data['language'].dropna()))))
-            cost = st.slider('Стоимость обучения, EUR', int(data['tuition_EUR'].min()), int(data['tuition_EUR'].max()), (0, 3000), step=50)
+            cost = st.slider('Стоимость обучения, EUR', int(data['tuition_EUR'].min()), int(data['tuition_EUR'].max()), (0, 8000), step=50)
         with c2:
             st.write('''
             
             
             
             ''') #to make row effects
-            st.write('')
-            st.write('')
-            st.write('')
-            st.write('')
-            st.write('')
-            sentence = st.text_area("Введи текст для выявления своих предпочтений", value='Например: я знаю статистику, прошел курсы по анализу данных и интересуюсь финансовыми рынками')
-            submit = st.form_submit_button(label="✨ Показать университеты")
+            st.markdown('')
+            st.markdown('')
+            sentence = st.text_area("Введите текст для выявления своих предпочтений -- можете ввести что угодно, но цифры и символы не учитываются нашей системой", value='Например: я знаю статистику, прошел курсы по анализу данных и интересуюсь финансовыми рынками')
+            submit = st.form_submit_button(label="✨ Получить рекомендацию")
             corpus = list(clean_words)
             model = load_model('model_cbow.bin')
             model.init_sims(replace=True)
@@ -317,64 +345,75 @@ if page=='Найти программу🌍':
 
     cmGreen = sns.light_palette("green", as_cmap=True)
     if submit:
-        if not agree:  
-            col1, col2, col3 = st.columns([3, 6, 3])
-            with col1:
-                st.write('')
-            with col2:
-                gif_runner = st.image("200.gif")
-            with col3:
-                st.write('')
-            recs = get_recs(str(text), N=int(number), mean=False)
-            recs50 = get_recs(str(text), N=50, mean=False)
-            gif_runner.empty()  
-            recs1 = recs[(recs['language'].isin(list(lang))) & (recs['country'].isin(list(location))) & (recs['on_site']==on_site) & (recs['format']==pace) & (recs['tuition_EUR']>=min(cost)) & (recs['tuition_EUR']<=max(cost))]
-            recs = pick_n_pretty(recs1)
-            df = recs.style.background_gradient(
-                cmap=cmGreen,
-                subset=[
-                    "Score",
-                ],
-            )
-            st.write(df.to_html(escape=False), unsafe_allow_html=True)
-            map2 = mfap_density_50(recs50)
-            map  = mfap(recs)
-            st.write('')
-            st.write('')
-            with st.expander('Посмотреть интерактивные карты'):
-                A, B = st.columns([5, 5])
-                with A:
+        if len(text)==0:
+            st.warning('Вы не рассказали о своих предпочтениях! В данном случае система выдаст первые {} строк(и) нашей базы с программами.... Это не очень интересно'.format(number))
+            simple_output()
+        else:
+            if not agree:
+                if len(location)>0 and len(lang)>0:  
+                    col1, col2, col3 = st.columns([10, 10, 10])
+                    with col1:
+                        st.write('')
+                    with col2:
+                        gif_runner = st.image("200.gif")
+                    with col3:
+                        st.write('')
+                    recs = get_recs(str(text), N=int(number), mean=False)
+                    recs50 = get_recs(str(text), N=50, mean=False)
+                    gif_runner.empty()  
+                    recs1 = recs[(recs['language'].isin(list(lang))) & (recs['country'].isin(list(location))) & (recs['on_site']==on_site) & (recs['format']==pace) & (recs['tuition_EUR']>min(cost)) & (recs['tuition_EUR']<max(cost))]
+                    if recs1.shape[0]!=0:
+                        recs2 = pick_n_pretty(recs1)
+                        df = recs2.style.background_gradient(
+                            cmap=cmGreen,
+                            subset=[
+                                "Score",
+                            ],
+                        )
+                        st.write(df.to_html(escape=False), unsafe_allow_html=True)
+                        map2 = mfap_density_50(recs50)
+                        map  = mfap(recs2)
+                        st.write('')
+                        st.write('')
+                        with st.expander('Посмотреть интерактивные карты'):
+                            A, B = st.columns([5, 5])
+                            with A:
+                                st.write('Расположение запрашиваемых университетов')
+                                folium_static(map) 
+                            with B:
+                                st.write('POI-распределение городов топ-50 соответствующих Вашему запросу программ')
+                                folium_static(map2)
+                        if recs1.shape[0]<number:
+                            st.warning("Упс... Программ меньше чем ожидалось, но эту проблему можно решить... Обратите внимание на опцию ниже)")
+                            recs1 = recs.copy()
+                            recs2 = pick_n_pretty(recs1)
+                            map3 = mfap(recs2)
+                            df = recs2.style.background_gradient(
+                                cmap=cmGreen,
+                                subset=[
+                                    "Score",
+                                ],
+                            )
+                            with st.expander('Предлагаем ознакомиться с дополнительными опциями из нашей базы'):
+                                st.write(df.to_html(escape=False), unsafe_allow_html=True)
+                                C, D, E = st.columns([2,5,2])
+                                with C:
+                                    st.write('')
+                                with D:
+                                    st.write('Расположение университетов из представленной выше таблицы')
+                                    folium_static(map3)
+                                with E:
+                                    st.write('')
 
-                    folium_static(map) 
-                with B:
-                    folium_static(map2)
+                            
+                    else:
+                        st.warning('Мы не смогли подобрать программы, соответствующие Вашим требованиям, но просим ознакомиться с существующими в нашей базе')
+                        simple_output()
+                else: 
+                    st.write('This is an error') #Надо будет полностью дописать
 
-        else: 
-            col1, col2, col3 = st.columns([10, 10, 10])
-            with col2:
-                gif_runner = st.image("200.gif")
-            recs1 = get_recs(str(text), N=int(number), mean=False)
-            recs50 = get_recs(str(text), N=50, mean=False)
-            recs1 = pick_n_pretty(recs1)
-            gif_runner.empty()
-            df = recs1.style.background_gradient(
-                cmap=cmGreen,
-                subset=[
-                    "Score",
-                ],
-            )
-            st.write(df.to_html(escape=False), unsafe_allow_html=True)  
-            map2 = mfap_density_50(recs50) 
-            map  = mfap(recs1)
-            st.write('')
-            st.write('')
-            with st.expander('Посмотреть интерактивные карты'):
-                A, B = st.columns([5, 5])
-                with A:
-
-                    folium_static(map) 
-                with B:
-                    folium_static(map2)
+            else: 
+                simple_output()
 if page=='Найти похожие программы🙌':
     c30, c31, c32 = st.columns([2.5, 1, 3])
 
@@ -398,13 +437,11 @@ if page=='Найти похожие программы🙌':
     st.write('Выберите одну программу для дальнейшего анализа')
     with st.form(key="my_form"):
         university_pick = st.selectbox("Список существующих в нашей базе магистерских программ", list(set(progs['Program1'].dropna())))
-        number_sim = st.number_input('Количество схожих программ', min_value=0, max_value=20, step=1, value=5)
+        number_sim = st.number_input('Количество схожих программ', min_value=0, max_value=50, step=1, value=5)
         submit = st.form_submit_button(label="✨ Показать университеты")
         cmGreen = sns.light_palette("green", as_cmap=True)
     if submit:
-#         def sim_prog(df=progs, prog=None, N=5):
-# df_one = df[df['Program1']==prog].sort_values(axis=0, by='cosine', ascending=False)
-# return df_one.iloc[1:N+1,:]
+
         recs1 = sim_prog(progs, str(university_pick), number_sim)
         recs1 = recs1[['Program1', 'Program2', 'cosine']]
         df = recs1.style.background_gradient(
@@ -416,26 +453,7 @@ if page=='Найти похожие программы🙌':
         st.write(df.to_html(escape=False), unsafe_allow_html=True)
 
 
-
-
-        
-
-
-        
-
-
-
-        
-    
-       
-        #else:
-         #   recs = get_recs(str(text))
-         #   st.dataframe(recs)
-    #else: 
-        #st.write('Результат можно получить только после нажатия кнопки')
-    
    
-    # Display results of the NLP task
 if page == 'Интересная статистика📈':
     st.title('Здесь должна быть описательная статистика')
 
