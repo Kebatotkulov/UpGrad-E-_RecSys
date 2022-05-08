@@ -111,7 +111,7 @@ class TfidfEmbeddingVectorizer(object):
 @st.cache(allow_output_mutation=True)
 def load_data(check): 
     if check: 
-        data = pd.read_excel('main_data.xlsx')
+        data = pd.read_excel('main_data.xlsx', index_col=0)
         embeddings = pd.read_pickle('embed.pickle')
         clean_words = pd.read_pickle('words.pickle')
         swords = pd.read_pickle('swords.pickle')
@@ -261,7 +261,7 @@ with st.sidebar:
         st.image('keystone-masters-degree.jpg')
     with col3:
         st.write('')
-    page = st.radio('Страница', ['Приветствие👋',"Найти программу🌍", "Найти похожие программы🙌","Интересная статистика📈"])
+    page = st.radio('Страница', ['Приветствие👋',"Найти программу🌍", "Найти похожие программы🙌","Данные и статистика📈"])
     
     # st.subheader('Выбери параметры')
     # location = st.multiselect('Страна', list(set(data['country'])))
@@ -272,26 +272,53 @@ with st.sidebar:
 
 # Page 1-Intro
 if page=='Приветствие👋':
-    img = Image.open("keystone-masters-degree.jpg")
-    st.image(img)
-  #  st.markdown(dash, unsafe_allow_html = True)
-    st.markdown("## How it works? :thought_balloon:")
-    #st.write(spread.url)
-    st.write(
-        "For an in depth overview of the ML methods used and how I created this app, three blog posts are below."
+    #_max_width_()
+    c30, c31, c32 = st.columns([2.5, 1, 3])
+
+    with c30:
+        st.image("keystone-masters-degree.jpg", width=400)
+
+    st.markdown('Здест надо написать вступительную речь')
+
+    with st.expander("ℹ️ - Идея проекта", expanded=True):
+
+        st.write(
+            """
+            Надо написать инструкцию по использованию этой страницы - хуета крч     
+    -   The *BERT Keyword Extractor* app is an easy-to-use interface built in Streamlit for the amazing [KeyBERT](https://github.com/MaartenGr/KeyBERT) library from Maarten Grootendorst!
+    -   It uses a minimal keyword extraction technique that leverages multiple NLP embeddings and relies on [Transformers] (https://huggingface.co/transformers/) 🤗 to create keywords/keyphrases that are most similar to a document.
+            """
         )
-    blog1 = "https://jackmleitch.medium.com/using-beautifulsoup-to-help-make-beautiful-soups-d2670a1d1d52"
-    blog2 = "https://towardsdatascience.com/building-a-recipe-recommendation-api-using-scikit-learn-nltk-docker-flask-and-heroku-bfc6c4bdd2d4"
-    blog3 = "https://towardsdatascience.com/building-a-recipe-recommendation-system-297c229dda7b"
-    st.markdown(
-        f"1. [Web Scraping Cooking Data With Beautiful Soup]({blog1})"
-        )
-    st.markdown(
-            f"2. [Building a Recipe Recommendation API using Scikit-Learn, NLTK, Docker, Flask, and Heroku]({blog2})"
-        )
-    st.markdown(
-            f"3. [Building a Recipe Recommendation System Using Word2Vec, Scikit-Learn, and Streamlit]({blog3})"
-        )
+
+        st.markdown("")
+
+    col1, col2 = st.columns([5,5])
+    with col1:
+        with st.expander("Данные", expanded=True):
+
+            st.write(
+                """
+                Надо написать инструкцию по использованию этой страницы - хуета крч     
+        -   The *BERT Keyword Extractor* app is an easy-to-use interface built in Streamlit for the amazing [KeyBERT](https://github.com/MaartenGr/KeyBERT) library from Maarten Grootendorst!
+        -   It uses a minimal keyword extraction technique that leverages multiple NLP embeddings and relies on [Transformers] (https://huggingface.co/transformers/) 🤗 to create keywords/keyphrases that are most similar to a document.
+                """
+            )
+
+            st.markdown("")
+    with col2:
+        with st.expander("Mетоды ", expanded=True):
+
+            st.write(
+                """
+                Надо написать инструкцию по использованию этой страницы - хуета крч     
+        -   The *BERT Keyword Extractor* app is an easy-to-use interface built in Streamlit for the amazing [KeyBERT](https://github.com/MaartenGr/KeyBERT) library from Maarten Grootendorst!
+        -   It uses a minimal keyword extraction technique that leverages multiple NLP embeddings and relies on [Transformers] (https://huggingface.co/transformers/) 🤗 to create keywords/keyphrases that are most similar to a document.
+                """
+            )
+
+            st.markdown("")
+
+    st.markdown("")
     #st.write(spread.url)
 
    # st.markdown(hello, unsafe_allow_html = True)
@@ -303,7 +330,7 @@ if page=='Найти программу🌍':
     with c30:
         st.image("keystone-masters-degree.jpg", width=400)
 
-    with st.expander("ℹ️ - Об этой старнице", expanded=False):
+    with st.expander("ℹ️ - Об этой старнице + Инструкция", expanded=False):
 
         st.write(
             """
@@ -335,11 +362,7 @@ if page=='Найти программу🌍':
             lang = st.multiselect('Язык обучения', sorted(list(set(data['language'].dropna()))))
             cost = st.slider('Стоимость обучения, EUR', int(data['tuition_EUR'].min()), int(data['tuition_EUR'].max()), (0, 8000), step=50)
         with c2:
-            st.write('''
-            
-            
-            
-            ''') #to make row effects
+             #to make row effects
             st.markdown('')
             st.markdown('')
             sentence = st.text_area("Введите текст для выявления своих предпочтений -- можете ввести что угодно, но цифры и символы не учитываются нашей системой", value='Например: я знаю статистику, прошел курсы по анализу данных и интересуюсь финансовыми рынками')
@@ -433,7 +456,7 @@ if page=='Найти похожие программы🙌':
     with c30:
         st.image("keystone-masters-degree.jpg", width=400)
 
-    with st.expander("ℹ️ - Об этой старнице", expanded=False):
+    with st.expander("ℹ️ - Об этой старнице + Инструкция", expanded=False):
 
         st.write(
             """
@@ -483,5 +506,24 @@ if page=='Найти похожие программы🙌':
 
 
    
-if page == 'Интересная статистика📈':
-    st.title('Здесь должна быть описательная статистика')
+if page == 'Данные и статистика📈':
+    #_max_width_()
+    c30, c31, c32 = st.columns([2.5, 1, 3])
+
+    with c30:
+        st.image("keystone-masters-degree.jpg", width=400)
+
+
+        st.markdown("")
+    see_data = st.expander('Посмотреть данные 👉')
+    with see_data:
+        data['duration_month'] = data['duration_month'].astype('str')
+        st.dataframe(data=data.reset_index(drop=True))
+    st.text('')
+
+    col1, col2, col3, col4, col5 = st.columns([2,2,2,2,2])
+    col1.metric("Temperature", "70 °F", "1.2 °F")
+    col2.metric("Wind", "9 mph", "-8%")
+    col3.metric("Humidity", "86%", "4%")
+    col4.metric("Humidity", "86%", "4%")
+    col5.metric("Humidity", "86%", "4%")
