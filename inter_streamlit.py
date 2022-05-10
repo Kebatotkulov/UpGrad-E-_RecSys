@@ -209,7 +209,7 @@ def mfap_density_50(recs50, df=latlong): #try this function on the main page
 def sim_prog(df=progs, prog=None):
     df_one = df[df['Program1']==prog]
     return df_one.sort_values(by='cosine', ascending=False)
-
+#yes.... the code is suboptimal, but i don't care about this point now ;)
 def p2p_locs(latlong=latlong, uni_info=data, recs=[], N=5): #recs is the output of sim_progs #density map for similar universities
     recs[['Uni', 'Prog']] = recs['Program2'].str.split(': ', 1, expand=True)
     recs[['Uni1', 'Prog1']] = recs['Program1'].str.split(': ', 1, expand=True)
@@ -258,7 +258,7 @@ with st.sidebar:
     with col1:
         st.write("")
     with col2:
-        st.image('keystone-masters-degree.jpg')
+        st.image('keystone-masters-degree.jpg') 
     with col3:
         st.write('')
     page = st.radio('Страница', ['Приветствие👋',"Найти программу🌍", "Найти похожие программы🙌","Данные и статистика📈"])
@@ -357,11 +357,11 @@ if page=='Найти программу🌍':
             number = st.number_input('Сколько рекоммендаций желаете увидеть на экране?', min_value=0, max_value=50, step=1, value=5)
             agree = st.checkbox('Выключить фильтрацию')
             location = st.multiselect('Страна', sorted(list(set(data['country'].dropna()))))
-            #dur = st.slider('Стоимость обучения, EUR', int(data['duration_month'].min()), int(data['duration_month'].max()), (0, 10), step=2)
-            on_site = st.selectbox('Темп обучения', ['Очное обучение', 'Заочное обучение','Очное обучение|Заочное обучение'])
+            dur = st.slider('Продолжительность обучения (мес)', int(data['duration_month'].min()), int(data['duration_month'].max()), (0, 10), step=2)
+            on_site = st.selectbox('Типп обучения', ['Очное обучение', 'Заочное обучение','Очное обучение|Заочное обучение'])
             pace = st.selectbox('Формат обучения', ['Онлайн', 'Кампус','Кампус|Онлайн'])
             lang = st.multiselect('Язык обучения', sorted(list(set(data['language'].dropna()))))
-            cost = st.slider('Стоимость обучения, EUR', int(data['tuition_EUR'].min()), int(data['tuition_EUR'].max()), (0, 8000), step=50)
+            cost = st.slider('Стоимость обучения в год, EUR', int(data['tuition_EUR'].min()), int(data['tuition_EUR'].max()), (0, 8000), step=50)
         with c2:
              #to make row effects
             st.markdown('')
@@ -398,7 +398,7 @@ if page=='Найти программу🌍':
                     recs = get_recs(str(text), N=int(number), mean=False)
                     recs50 = get_recs(str(text), N=50, mean=False)
                     gif_runner.empty()  
-                    recs1 = recs[(recs['language'].isin(list(lang))) & (recs['country'].isin(list(location))) & (recs['on_site']==on_site) & (recs['format']==pace)  & (recs['tuition_EUR']>min(cost)) & (recs['tuition_EUR']<max(cost))] #& (recs['duration_month']>=min(dur)) & (recs['duration_month']<=max(dur))
+                    recs1 = recs[(recs['language'].isin(list(lang))) & (recs['country'].isin(list(location))) & (recs['on_site']==on_site) & (recs['format']==pace)  & (recs['tuition_EUR']>min(cost)) & (recs['tuition_EUR']<max(cost)) & (recs['duration_month']>min(dur)) & (recs['duration_month']<=max(dur))]
                     if recs1.shape[0]!=0:
                         recs2 = pick_n_pretty(recs1)
                         df = recs2.style.background_gradient(
@@ -416,10 +416,10 @@ if page=='Найти программу🌍':
                             ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
                             with c1:
                                 st.write('Расположение запрашиваемых университетов')
-                                folium_static(map, width=500) 
+                                folium_static(map, width=450) 
                             with c2:
                                 st.write('POI-распределение городов топ-50 соответствующих Вашему запросу программ')
-                                folium_static(map2, width=500)
+                                folium_static(map2, width=450)
                         if recs1.shape[0]<number:
                             st.warning("Упс... Программ меньше чем ожидалось, но эту проблему можно решить... Обратите внимание на опцию ниже)")
                             recs1 = recs.copy()
@@ -518,7 +518,7 @@ if page == 'Данные и статистика📈':
         st.markdown("")
     see_data = st.expander('Посмотреть данные 👉')
     with see_data:
-        data['duration_month'] = data['duration_month'].astype('str')
+        data['duration_month'] = data['duration_month'].astype('int64')
         st.dataframe(data=data.reset_index(drop=True))
     st.text('')
 
