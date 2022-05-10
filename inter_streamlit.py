@@ -193,7 +193,7 @@ def get_recs(sentence, N=10, mean=False):
 def mfap(recs1, df=latlong):
     latlong = recs1.merge(df, left_on='city ', right_on='location', how = 'inner')      
     uni_locations = latlong[["lat", "long", "location"]]
-    map = folium.Map(width=1000,height=500,location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
+    map = folium.Map(location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
     for index, location_info in uni_locations.iterrows():
         folium.Marker([location_info["lat"], location_info["long"]], popup=location_info["location"]).add_to(map)
     return map
@@ -201,7 +201,7 @@ def mfap(recs1, df=latlong):
 def mfap_density_50(recs50, df=latlong): #try this function on the main page
     latlong = recs50.merge(df, left_on='city ', right_on='location', how = 'inner')
     uni_locations = latlong[["lat", "long"]]
-    map = folium.Map(width=1000,height=500,location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
+    map = folium.Map(location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
     cityArr = uni_locations.values
     map.add_child(plugins.HeatMap(cityArr, radius=25))
     return map
@@ -218,7 +218,7 @@ def p2p_locs(latlong=latlong, uni_info=data, recs=[], N=5): #recs is the output 
             .merge(latlong, left_on='city ', right_on='location', how ='inner'))
     fin_rec = ps[['Program1', 'Program2', 'city ','cosine']].reset_index().iloc[1:N+1,:]
     uni_locations = ps[["lat", "long"]]
-    map = folium.Map(width=1000,height=500,location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
+    map = folium.Map(location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
     cityArr = uni_locations.values
     map.add_child(plugins.HeatMap(cityArr, radius=25))
     return map, fin_rec, ps 
@@ -244,13 +244,13 @@ def simple_output(map=True):
         st.write('')
         st.write('')
         with st.expander('Посмотреть интерактивные карты 🌍'):
-            A, B = st.columns([5, 5])
-            with A:
+            ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
+            with c1:
                 st.write('Расположение запрашиваемых университетов')
-                folium_static(map) 
-            with B:
+                folium_static(map, width=450) 
+            with c2:
                 st.write('POI-распределение городов топ-50 соответствующих Вашему запросу программ')
-                folium_static(map2)
+                folium_static(map2, width=450)
 
 
 with st.sidebar:
@@ -357,8 +357,9 @@ if page=='Найти программу🌍':
             number = st.number_input('Сколько рекоммендаций желаете увидеть на экране?', min_value=0, max_value=50, step=1, value=5)
             agree = st.checkbox('Выключить фильтрацию')
             location = st.multiselect('Страна', sorted(list(set(data['country'].dropna()))))
+            #dur = st.slider('Стоимость обучения, EUR', int(data['duration_month'].min()), int(data['duration_month'].max()), (0, 10), step=2)
             on_site = st.selectbox('Темп обучения', ['Очное обучение', 'Заочное обучение','Очное обучение|Заочное обучение'])
-            pace = st.selectbox('Форма обучения', ['Онлайн', 'Кампус','Кампус|Онлайн'])
+            pace = st.selectbox('Формат обучения', ['Онлайн', 'Кампус','Кампус|Онлайн'])
             lang = st.multiselect('Язык обучения', sorted(list(set(data['language'].dropna()))))
             cost = st.slider('Стоимость обучения, EUR', int(data['tuition_EUR'].min()), int(data['tuition_EUR'].max()), (0, 8000), step=50)
         with c2:
@@ -397,7 +398,7 @@ if page=='Найти программу🌍':
                     recs = get_recs(str(text), N=int(number), mean=False)
                     recs50 = get_recs(str(text), N=50, mean=False)
                     gif_runner.empty()  
-                    recs1 = recs[(recs['language'].isin(list(lang))) & (recs['country'].isin(list(location))) & (recs['on_site']==on_site) & (recs['format']==pace) & (recs['tuition_EUR']>min(cost)) & (recs['tuition_EUR']<max(cost))]
+                    recs1 = recs[(recs['language'].isin(list(lang))) & (recs['country'].isin(list(location))) & (recs['on_site']==on_site) & (recs['format']==pace)  & (recs['tuition_EUR']>min(cost)) & (recs['tuition_EUR']<max(cost))] #& (recs['duration_month']>=min(dur)) & (recs['duration_month']<=max(dur))
                     if recs1.shape[0]!=0:
                         recs2 = pick_n_pretty(recs1)
                         df = recs2.style.background_gradient(
@@ -412,13 +413,13 @@ if page=='Найти программу🌍':
                         st.write('')
                         st.write('')
                         with st.expander('Посмотреть интерактивные карты🌍'):
-                            A, B = st.columns([5, 5])
-                            with A:
+                            ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
+                            with c1:
                                 st.write('Расположение запрашиваемых университетов')
-                                folium_static(map) 
-                            with B:
+                                folium_static(map, width=500) 
+                            with c2:
                                 st.write('POI-распределение городов топ-50 соответствующих Вашему запросу программ')
-                                folium_static(map2)
+                                folium_static(map2, width=500)
                         if recs1.shape[0]<number:
                             st.warning("Упс... Программ меньше чем ожидалось, но эту проблему можно решить... Обратите внимание на опцию ниже)")
                             recs1 = recs.copy()
@@ -489,15 +490,15 @@ if page=='Найти похожие программы🙌':
         with see_data:
             st.write(df.to_html(escape=False), unsafe_allow_html=True)
         st.write('')
-        a, b = st.columns([5,5])
-        with a:
+        ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
+        with c1:
             st.write('Распределение схожих программ')
-            folium_static(map)
-        with b:
+            folium_static(map, width=500)
+        with c2:
             st.write('')
-            c_metric = ps.groupby('Program1')['Program2'].count()[0]-1
+            c_metric = ps.groupby('Program1')['Program2'].count()[0]
             st.metric(label='Схожих программ', value='{}'.format(c_metric))
-            d_metric = ps[ps.Uni==ps.Uni1].shape[0]-1
+            d_metric = ps[ps.Uni==ps.Uni1].shape[0]
             st.metric(label='В одном университете', value='{}'.format(d_metric))
             top = ps.groupby(['city '])['Program2'].agg(['count']).sort_values(by = 'count', ascending=False).head()
             df = pd.DataFrame({'Город':list(top.index), 'Количество': list(top['count'])})
