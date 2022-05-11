@@ -284,7 +284,7 @@ if page=='Приветствие👋':
 
         st.write(
             """
-            Надо написать инструкцию по использованию этой страницы - хуета крч     
+            Надо написать инструкцию по использованию этой страницы - 
     -   The *BERT Keyword Extractor* app is an easy-to-use interface built in Streamlit for the amazing [KeyBERT](https://github.com/MaartenGr/KeyBERT) library from Maarten Grootendorst!
     -   It uses a minimal keyword extraction technique that leverages multiple NLP embeddings and relies on [Transformers] (https://huggingface.co/transformers/) 🤗 to create keywords/keyphrases that are most similar to a document.
             """
@@ -298,7 +298,7 @@ if page=='Приветствие👋':
 
             st.write(
                 """
-                Надо написать инструкцию по использованию этой страницы - хуета крч     
+                Надо написать инструкцию по использованию этой страницы -     
         -   The *BERT Keyword Extractor* app is an easy-to-use interface built in Streamlit for the amazing [KeyBERT](https://github.com/MaartenGr/KeyBERT) library from Maarten Grootendorst!
         -   It uses a minimal keyword extraction technique that leverages multiple NLP embeddings and relies on [Transformers] (https://huggingface.co/transformers/) 🤗 to create keywords/keyphrases that are most similar to a document.
                 """
@@ -310,7 +310,7 @@ if page=='Приветствие👋':
 
             st.write(
                 """
-                Надо написать инструкцию по использованию этой страницы - хуета крч     
+                Надо написать инструкцию по использованию этой страницы -    
         -   The *BERT Keyword Extractor* app is an easy-to-use interface built in Streamlit for the amazing [KeyBERT](https://github.com/MaartenGr/KeyBERT) library from Maarten Grootendorst!
         -   It uses a minimal keyword extraction technique that leverages multiple NLP embeddings and relies on [Transformers] (https://huggingface.co/transformers/) 🤗 to create keywords/keyphrases that are most similar to a document.
                 """
@@ -334,7 +334,7 @@ if page=='Найти программу🌍':
 
         st.write(
             """
-            Надо написать инструкцию по использованию этой страницы - хуета крч     
+            Надо написать инструкцию по использованию этой страницы - 
     -   The *BERT Keyword Extractor* app is an easy-to-use interface built in Streamlit for the amazing [KeyBERT](https://github.com/MaartenGr/KeyBERT) library from Maarten Grootendorst!
     -   It uses a minimal keyword extraction technique that leverages multiple NLP embeddings and relies on [Transformers] (https://huggingface.co/transformers/) 🤗 to create keywords/keyphrases that are most similar to a document.
             """
@@ -461,7 +461,7 @@ if page=='Найти похожие программы🙌':
 
         st.write(
             """
-            Надо написать инструкцию по использованию этой страницы - хуета крч     
+            Надо написать инструкцию по использованию этой страницы     
     -   The *BERT Keyword Extractor* app is an easy-to-use interface built in Streamlit for the amazing [KeyBERT](https://github.com/MaartenGr/KeyBERT) library from Maarten Grootendorst!
     -   It uses a minimal keyword extraction technique that leverages multiple NLP embeddings and relies on [Transformers] (https://huggingface.co/transformers/) 🤗 to create keywords/keyphrases that are most similar to a document.
             """
