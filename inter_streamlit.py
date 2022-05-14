@@ -12,6 +12,10 @@ from folium import plugins
 from googletrans import Translator
 from PIL import Image
 import seaborn as sns
+import plotly
+import plotly.graph_objs as go
+import plotly.express as px
+from plotly.subplots import make_subplots
 
 #spreadsheet check
 # from gsheetsdb import connect
@@ -111,7 +115,7 @@ class TfidfEmbeddingVectorizer(object):
 @st.cache(allow_output_mutation=True)
 def load_data(check): 
     if check: 
-        data = pd.read_excel('main_data.xlsx', index_col=0)
+        data = pd.read_excel('main_data-2.xlsx', index_col=0)
         embeddings = pd.read_pickle('embed.pickle')
         clean_words = pd.read_pickle('words.pickle')
         swords = pd.read_pickle('swords.pickle')
@@ -518,13 +522,67 @@ if page == 'Данные и статистика📈':
         st.markdown("")
     see_data = st.expander('Посмотреть данные 👉')
     with see_data:
-        data['duration_month'] = data['duration_month'].astype('int64')
+        data['duration_month'] = data['duration_month'].astype('str')
         st.dataframe(data=data.reset_index(drop=True))
     st.text('')
 
-    col1, col2, col3, col4, col5 = st.columns([2,2,2,2,2])
-    col1.metric("Temperature", "70 °F", "1.2 °F")
-    col2.metric("Wind", "9 mph", "-8%")
-    col3.metric("Humidity", "86%", "4%")
-    col4.metric("Humidity", "86%", "4%")
-    col5.metric("Humidity", "86%", "4%")
+    col1, col2, col3 = st.columns(3)
+    qprogs, qcountry, quni = data.shape[0], len(set(data['country'])), len(set(data['university'])) 
+    col1.metric("Стран 🇷🇺", "{}".format(qcountry))
+    col2.metric("Университетов 🎓", "{}".format(quni))
+    col3.metric("Программ 🚀", "{}".format(qprogs))
+
+    st.write('')
+
+    data1 = data.groupby('country').count().reset_index().sort_values(by='Link', ascending=False).head(6)
+    data2=data.groupby('format').count().reset_index()
+
+    ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
+    with c1:
+        fig1 = px.pie(data1, names='country', values='Link', color_discrete_sequence=px.colors.sequential.RdBu, labels={
+                    "country": "Страна",
+                    "n": "Количесво программ",
+                }, title='ТОП-стран по количеству программ',  width=600, height=400)
+        fig1.update_layout(paper_bgcolor="black",
+                            font_color="white")
+        st.plotly_chart(fig1, use_container_width=True)
+
+    with c2:
+        fig2 = px.pie(data2, names='format', values='Link', color_discrete_sequence=px.colors.diverging.RdYlGn, labels={
+                    "format": "Формат",
+                    "n": "Количесво программ",
+                }, title='Количество программ по форматам обучения',  width=600, height=400)
+        fig2.update_layout(paper_bgcolor="black",
+                            font_color="white")
+        st.plotly_chart(fig2, use_container_width=True)
+    
+    data3 = data.groupby('country')['tuition_EUR'].agg(['mean']).reset_index().sort_values(by='mean', ascending=True).head(43)
+    data4=data.groupby('country')['duration_month'].agg(['mean']).reset_index().sort_values(by='mean', ascending=False).head(45)
+    ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
+    with c1:
+        fig3 = px.bar(data3, x = "mean", y = "country", orientation='h', labels={
+                            "mean": "Стоимость обучения",
+                            "country": "Страна"
+                        }, title='Средняя стоимость обучения по странам')
+
+        fig3.update_traces(marker_color='red', marker_line_color='red',
+                        marker_line_width=1, opacity=0.7)
+
+        fig3.update_layout(legend_font_size=1, width=800,
+            height=900, paper_bgcolor="black", font_color='white')
+
+        st.plotly_chart(fig3, use_container_width=True)
+
+    with c2:
+        fig6 = px.bar(data4, x = "mean", y = "country", orientation='h', text_auto=True, labels={
+                            "mean": "Длительность (мес)",
+                            "country": "Страна",
+                        }, title='Средняя длительность обучения')
+
+        fig6.update_traces(marker_color='red', marker_line_color='red',
+                        marker_line_width=1, opacity=0.7)
+
+        fig6.update_layout(yaxis=dict(autorange="reversed"), legend_font_size=1, width=700,
+            height=800, paper_bgcolor="black", font_color='white')
+
+        st.plotly_chart(fig6, use_container_width=True)
