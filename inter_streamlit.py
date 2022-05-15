@@ -265,7 +265,7 @@ with st.sidebar:
         st.image('keystone-masters-degree.jpg') 
     with col3:
         st.write('')
-    page = st.radio('Страница', ['Приветствие👋',"Найти программу🌍", "Найти похожие программы🙌","Данные и статистика📈"])
+    page = st.radio('Страница', ['Приветствие👋',"Найти программу🌍", "Найти схожие программы🙌","Данные и статистика📈"])
     
     # st.subheader('Выбери параметры')
     # location = st.multiselect('Страна', list(set(data['country'])))
@@ -455,7 +455,7 @@ if page=='Найти программу🌍':
 
             else: 
                 simple_output()
-if page=='Найти похожие программы🙌':
+if page=='Найти схожие программы🙌':
     c30, c31, c32 = st.columns([2.5, 1, 3])
 
     with c30:
@@ -513,6 +513,7 @@ if page=='Найти похожие программы🙌':
    
 if page == 'Данные и статистика📈':
     #_max_width_()
+    #data = pd.read_excel('main_data-2.xlsx', index_col=0)
     c30, c31, c32 = st.columns([2.5, 1, 3])
 
     with c30:
@@ -523,66 +524,136 @@ if page == 'Данные и статистика📈':
     see_data = st.expander('Посмотреть данные 👉')
     with see_data:
         data['duration_month'] = data['duration_month'].astype('str')
-        st.dataframe(data=data.reset_index(drop=True))
+        st.dataframe(data=data)
     st.text('')
 
-    col1, col2, col3 = st.columns(3)
-    qprogs, qcountry, quni = data.shape[0], len(set(data['country'])), len(set(data['university'])) 
-    col1.metric("Стран 🇷🇺", "{}".format(qcountry))
-    col2.metric("Университетов 🎓", "{}".format(quni))
-    col3.metric("Программ 🚀", "{}".format(qprogs))
+    with st.expander('Общая статистика'):
 
+        col1, col2, col3, col4, col5, col6, col7 = st.columns([1,4,1,4,1,4,1])
+        qprogs, qcountry, quni = data.shape[0], len(set(data['country'])), len(set(data['university'])) 
+        col1.write('')
+        col2.metric("Стран 🌐", "{}".format(qcountry))
+        col3.write('')
+        col4.metric("Университетов 🎓","1440") #"{}".format(quni))
+        col5.write('')
+        col6.metric("Программы 🚀", "6502")#"{}".format(qprogs))
+        col7.write('')
+
+        st.write('')
+
+        data1 = data.groupby('country').count().reset_index().sort_values(by='Link', ascending=False).head(6)
+        data2 = data.groupby('format').count().reset_index()
+
+        ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
+        with c1:
+            fig1 = px.pie(data1, names='country', values='Link', color_discrete_sequence=px.colors.sequential.RdBu, labels={
+                        "country": "Страна",
+                        "n": "Количесво программ",
+                    }, title='ТОП-стран по количеству программ',  width=600, height=400)
+            fig1.update_layout(paper_bgcolor="black",
+                                font_color="white")
+            st.plotly_chart(fig1, use_container_width=True)
+
+        with c2:
+            fig2 = px.pie(data2, names='format', values='Link', color_discrete_sequence=px.colors.diverging.RdYlGn, labels={
+                        "format": "Формат",
+                        "n": "Количесво программ",
+                    }, title='Соотношщение программ по форматам обучения',  width=600, height=400)
+            fig2.update_layout(paper_bgcolor="black",
+                                font_color="white")
+            st.plotly_chart(fig2, use_container_width=True)
+        data['duration_month'] = data['duration_month'].astype('float32')
+        data3 = data.groupby('country')['tuition_EUR'].agg(['mean']).reset_index().sort_values(by='mean', ascending=True).head(43)
+        data4 = data.groupby('country')['duration_month'].agg(['mean']).reset_index().sort_values(by='mean', ascending=False).head(45)
+        ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
+        with c1:
+            fig3 = px.bar(data3, x = "mean", y = "country", orientation='h', labels={
+                                "mean": "Стоимость обучения",
+                                "country": "Страна"
+                            }, title='Средняя стоимость обучения по странам')
+            fig3.update_traces(marker_color='red', marker_line_color='red',
+                            marker_line_width=1, opacity=1)
+            fig3.update_layout(legend_font_size=1, width=800,
+                height=900, paper_bgcolor="black", font_color='white')
+            st.plotly_chart(fig3, use_container_width=True)
+
+        with c2:
+            fig6 = px.bar(data4, x = "mean", y = "country", orientation='h', text_auto=True, labels={
+                                "mean": "Длительность (мес)",
+                                "country": "Страна",
+                            }, title='Средняя длительность обучения')
+            fig6.update_traces(marker_color='red', marker_line_color='red',
+                            marker_line_width=1, opacity=1)
+            fig6.update_layout(yaxis=dict(autorange="reversed"), legend_font_size=1, width=700,
+                height=900, paper_bgcolor="black", font_color='white')
+            st.plotly_chart(fig6, use_container_width=True)
+        
     st.write('')
 
-    data1 = data.groupby('country').count().reset_index().sort_values(by='Link', ascending=False).head(6)
-    data2=data.groupby('format').count().reset_index()
+    st.write('Выберите страну для дальнейшего анализа')
+        
+    with st.form(key="my_form"):
+        country = st.selectbox("Список существующих в нашей базе стран", list(set(data['country'].dropna())))
+        submit = st.form_submit_button(label="✨ Подтвердить выбор")
+    if submit:
+        data_gb = data[data['country']==country]
+        with st.expander('{} - замечательный выбор!'.format(country)):
+            data_f = data_gb.groupby('format').count().reset_index()
+            data_l = data_gb.groupby('language').count().reset_index()
+            ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
+            with c1:
+                figf = px.pie(data_f, names='format', values='Link', color_discrete_sequence=px.colors.sequential.RdBu, labels={
+                            "format": "Формат",
+                            "Link": "Количесво программ",
+                        }, title='Соотношение программ по форматам обучения',  width=600, height=400)
+                figf.update_layout(paper_bgcolor="black",
+                                    font_color="white")
+                st.plotly_chart(figf, use_container_width=True)
 
-    ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
-    with c1:
-        fig1 = px.pie(data1, names='country', values='Link', color_discrete_sequence=px.colors.sequential.RdBu, labels={
-                    "country": "Страна",
-                    "n": "Количесво программ",
-                }, title='ТОП-стран по количеству программ',  width=600, height=400)
-        fig1.update_layout(paper_bgcolor="black",
-                            font_color="white")
-        st.plotly_chart(fig1, use_container_width=True)
+            with c2:
+                figl = px.pie(data_l, names='language', values='Link', color_discrete_sequence=px.colors.diverging.RdYlGn, labels={
+                            "language": "Язык обучения",
+                            "Link": "Количесво программ",
+                        }, title='Существующие языки обучения',  width=600, height=400)
+                figl.update_layout(paper_bgcolor="black",
+                                    font_color="white")
+                st.plotly_chart(figl, use_container_width=True)
+            
+            st.write('')
+            data_count = data_gb.groupby('university').count().reset_index().sort_values(by='Link', ascending=False).head(60)
+            data_cost = data_gb.groupby('university')['tuition_EUR'].agg(['mean']).reset_index().sort_values(by='mean', ascending=False).head(60)
+            c1, c2, c3 = st.columns([0.05, 6 ,0.05])
+            with c2:
+                fig10 = px.bar(data_count, x = "Link", y = "university", orientation='h', text_auto=True, labels={
+                     "Link": "Количество программ в университете",
+                     "university": "Университет",
+                 }, title='Встречаемость программ в университах')
 
-    with c2:
-        fig2 = px.pie(data2, names='format', values='Link', color_discrete_sequence=px.colors.diverging.RdYlGn, labels={
-                    "format": "Формат",
-                    "n": "Количесво программ",
-                }, title='Количество программ по форматам обучения',  width=600, height=400)
-        fig2.update_layout(paper_bgcolor="black",
-                            font_color="white")
-        st.plotly_chart(fig2, use_container_width=True)
-    
-    data3 = data.groupby('country')['tuition_EUR'].agg(['mean']).reset_index().sort_values(by='mean', ascending=True).head(43)
-    data4=data.groupby('country')['duration_month'].agg(['mean']).reset_index().sort_values(by='mean', ascending=False).head(45)
-    ce, c1, ce, c2, c3 = st.columns([0.07, 4, 0.07, 4, 0.07])
-    with c1:
-        fig3 = px.bar(data3, x = "mean", y = "country", orientation='h', labels={
-                            "mean": "Стоимость обучения",
-                            "country": "Страна"
-                        }, title='Средняя стоимость обучения по странам')
+                fig10.update_traces(marker_color='red', marker_line_color='red',
+                                marker_line_width=1, opacity=1)
 
-        fig3.update_traces(marker_color='red', marker_line_color='red',
-                        marker_line_width=1, opacity=0.7)
+                fig10.update_layout(yaxis=dict(autorange="reversed"), legend_font_size=1, width=1000,
+                    height=1100,  paper_bgcolor="black", font_color='white')
+                st.plotly_chart(fig10, use_container_width=True)
+            
+            st.write('')
 
-        fig3.update_layout(legend_font_size=1, width=800,
-            height=900, paper_bgcolor="black", font_color='white')
+            c1, c2, c3 = st.columns([0.05, 6 ,0.05])
+            with c2:
+                fig8 = px.bar(data_cost.dropna(), x = "mean", y = "university", orientation='h', text_auto=True, labels={
+                        "mean": "Стоимость обучени (EUR/год)",
+                        "university": "Университет",
+                    }, title='Средняя стоимость обучения в университетах')
 
-        st.plotly_chart(fig3, use_container_width=True)
+                fig8.update_traces(marker_color='red', marker_line_color='red',
+                    marker_line_width=1, opacity=1)
 
-    with c2:
-        fig6 = px.bar(data4, x = "mean", y = "country", orientation='h', text_auto=True, labels={
-                            "mean": "Длительность (мес)",
-                            "country": "Страна",
-                        }, title='Средняя длительность обучения')
+                fig8.update_layout(yaxis=dict(autorange="reversed"), legend_font_size=1, width=1000,
+                        height=1100,  paper_bgcolor="black", font_color='white')
+                st.plotly_chart(fig8, use_container_width=True)
+            
 
-        fig6.update_traces(marker_color='red', marker_line_color='red',
-                        marker_line_width=1, opacity=0.7)
+                
 
-        fig6.update_layout(yaxis=dict(autorange="reversed"), legend_font_size=1, width=700,
-            height=800, paper_bgcolor="black", font_color='white')
 
-        st.plotly_chart(fig6, use_container_width=True)
+            
