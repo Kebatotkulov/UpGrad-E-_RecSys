@@ -12,10 +12,7 @@ from folium import plugins
 from googletrans import Translator
 from PIL import Image
 import seaborn as sns
-import plotly
-import plotly.graph_objs as go
 import plotly.express as px
-from plotly.subplots import make_subplots
 
 #spreadsheet check
 # from gsheetsdb import connect
