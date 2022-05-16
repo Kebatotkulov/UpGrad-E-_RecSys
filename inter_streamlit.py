@@ -112,7 +112,7 @@ class TfidfEmbeddingVectorizer(object):
 @st.cache(allow_output_mutation=True)
 def load_data(check): 
     if check: 
-        data = pd.read_excel('main_data-2-2_copy.xlsx', index_col=0)
+        data = pd.read_excel('main_data-2-2_copy (1).xlsx', index_col=0)
         embeddings = pd.read_pickle('embed.pickle')
         clean_words = pd.read_pickle('words.pickle')
         swords = pd.read_pickle('swords.pickle')
@@ -172,7 +172,7 @@ def pick_n_pretty(df):
     return output#.style.applymap(lambda x: "background-color: red" if x==0 else "background-color: white")
 
 
-def get_recommendations(N, scores, data_path = 'main_data.xlsx'):
+def get_recommendations(N, scores, data_path = 'main_data-2-2_copy (1).xlsx'):
     top = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:N]
     data = (pd.read_excel(data_path, index_col = 0)
            .drop(columns = ['msg_sorted_clean'])
