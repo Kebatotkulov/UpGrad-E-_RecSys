@@ -112,7 +112,7 @@ class TfidfEmbeddingVectorizer(object):
 @st.cache(allow_output_mutation=True)
 def load_data(check): 
     if check: 
-        data = pd.read_excel('main_data-2.xlsx', index_col=0)
+        data = pd.read_excel('main_data-2-2_copy.xlsx', index_col=0)
         embeddings = pd.read_pickle('embed.pickle')
         clean_words = pd.read_pickle('words.pickle')
         swords = pd.read_pickle('swords.pickle')
@@ -164,7 +164,7 @@ def program_parser2(data):
     return data
 
 def pick_n_pretty(df):
-    output = df[['Link', 'program', 'university', 'country', 'city ', 'language', 'tuition_EUR','Score']]
+    output = df[['Link', 'program', 'university', 'country', 'city', 'language', 'tuition_EUR','Score']]
     output["Link"] = output.apply(
             lambda row: make_clickable(row["program"], row["Link"]), axis=1)
     output['tuition_EUR'] = output['tuition_EUR'].fillna(0)
@@ -192,7 +192,7 @@ def get_recs(sentence, N=10, mean=False):
     return recommendations
 
 def mfap(recs1, df=latlong):
-    latlong = recs1.merge(df, left_on='city ', right_on='location', how = 'inner')      
+    latlong = recs1.merge(df, left_on='city', right_on='location', how = 'inner')      
     uni_locations = latlong[["lat", "long", "location"]]
     map = folium.Map(location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
     for index, location_info in uni_locations.iterrows():
@@ -200,7 +200,7 @@ def mfap(recs1, df=latlong):
     return map
 
 def mfap_density_50(recs50, df=latlong): #try this function on the main page
-    latlong = recs50.merge(df, left_on='city ', right_on='location', how = 'inner')
+    latlong = recs50.merge(df, left_on='city', right_on='location', how = 'inner')
     uni_locations = latlong[["lat", "long"]]
     map = folium.Map(location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
     cityArr = uni_locations.values
@@ -216,8 +216,8 @@ def p2p_locs(latlong=latlong, uni_info=data, recs=[], N=5): #recs is the output 
     recs[['Uni1', 'Prog1']] = recs['Program1'].str.split(': ', 1, expand=True)
     ps = (recs
             .merge(uni_info, left_on=['Uni', 'Prog'], right_on=['university','program'], how = 'inner')
-            .merge(latlong, left_on='city ', right_on='location', how ='inner'))
-    fin_rec = ps[['Program1', 'Program2', 'city ','cosine']].reset_index().iloc[1:N+1,:]
+            .merge(latlong, left_on='city', right_on='location', how ='inner'))
+    fin_rec = ps[['Program1', 'Program2', 'city','cosine']].reset_index().iloc[1:N+1,:]
     uni_locations = ps[["lat", "long"]]
     map = folium.Map(location=[uni_locations.lat.mean(), uni_locations.long.mean()], zoom_start=4, control_scale=True)
     cityArr = uni_locations.values
@@ -290,7 +290,7 @@ if page=='Приветствие👋':
             Сайт предназначен для тех, кто желает продолжить обучение, но испытывает трудности в поиске подходящей программы, университета или страны.
         """, unsafe_allow_html = True)
 
-    with st.expander("ℹ️ - Идея проекта", expanded=True):
+    with st.expander("ℹ️ - Идея проекта", expanded=False):
 
         st.markdown(
             """ 
@@ -310,7 +310,7 @@ if page=='Приветствие👋':
 
     col1, col2 = st.columns([5,5])
     with col1:
-        with st.expander("Данные", expanded=True):
+        with st.expander("Данные", expanded=False):
 
             st.markdown( """
             Проект основан на данных с сайта [masterstudies.ru](https://masterstudies.com). Сбор данных оказался более комлексной задачей, чем ожидалось изначально. Процесс сбора состоял из трёх этапов:
@@ -328,7 +328,7 @@ if page=='Приветствие👋':
 
             st.markdown("")
     with col2:
-        with st.expander("Mетоды ", expanded=True):
+        with st.expander("Mетоды ", expanded=False):
 
             st.write(
                 """
@@ -365,7 +365,7 @@ if page=='Найти программу🌍':
     with c30:
         st.image("keystone-masters-degree.jpg", width=400)
 
-    with st.expander("ℹ️ - Об этой старнице + Инструкция", expanded=False):
+    with st.expander("ℹ️ - Об этой странице + Инструкция", expanded=False):
 
         st.markdown("""
                 На этой странице ты сможешь ознакомиться с близки твоим предпочтениями типами программ. Интерфейс достаточно прост в применении, поэтому расскажем только о критически важных аспектах взаимодействия. У тебя есть возможность получения общих и более специфических рекомендаций, которые зависят от твоих действий.
@@ -399,7 +399,7 @@ if page=='Найти программу🌍':
             agree = st.checkbox('Выключить фильтрацию')
             location = st.multiselect('Страна', sorted(list(set(data['country'].dropna()))))
             dur = st.slider('Продолжительность обучения (мес)', int(data['duration_month'].min()), int(data['duration_month'].max()), (0, 10), step=2)
-            on_site = st.selectbox('Типп обучения', ['Очное обучение', 'Заочное обучение','Очное обучение|Заочное обучение'])
+            on_site = st.selectbox('Тип обучения', ['Очное обучение', 'Заочное обучение','Очное обучение|Заочное обучение'])
             pace = st.selectbox('Формат обучения', ['Онлайн', 'Кампус','Кампус|Онлайн'])
             lang = st.multiselect('Язык обучения', sorted(list(set(data['language'].dropna()))))
             cost = st.slider('Стоимость обучения в год, EUR', int(data['tuition_EUR'].min()), int(data['tuition_EUR'].max()), (0, 8000), step=50)
@@ -506,7 +506,7 @@ if page=='Найти схожие программы🙌':
 
     st.markdown("")    
 
-    st.write('Выбери одну программу для получения ближайших к ней программ')
+    st.write('Выбери одну программу для получения схожих')
     with st.form(key="my_form"):
         university_pick = st.selectbox("Список существующих в нашей базе магистерских программ", list(set(progs['Program1'].dropna())))
         number_sim = st.number_input('Количество схожих программ', min_value=0, max_value=50, step=1, value=5)
@@ -535,7 +535,7 @@ if page=='Найти схожие программы🙌':
             st.metric(label='Схожих программ', value='{}'.format(c_metric))
             d_metric = ps[ps.Uni==ps.Uni1].shape[0]
             st.metric(label='В одном университете', value='{}'.format(d_metric))
-            top = ps.groupby(['city '])['Program2'].agg(['count']).sort_values(by = 'count', ascending=False)
+            top = ps.groupby(['city'])['Program2'].agg(['count']).sort_values(by = 'count', ascending=False)
             df = pd.DataFrame({'Город':list(top.index), 'Количество': list(top['count'])})
             with st.expander('Встречаемость стран схожих программ', expanded=True):
                 st.dataframe(data=df)
@@ -660,7 +660,7 @@ if page == 'Данные и статистика📈':
                 fig10 = px.bar(data_count, x = "Link", y = "university", orientation='h', text_auto=True, labels={
                      "Link": "Количество программ в университете",
                      "university": "Университет",
-                 }, title='Встречаемость программ в университах')
+                 }, title='Встречаемость программ в университетах')
 
                 fig10.update_traces(marker_color='red', marker_line_color='red',
                                 marker_line_width=1, opacity=1)
