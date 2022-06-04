@@ -436,10 +436,11 @@ if page=='Найти программу🌍':
                         gif_runner = st.image("200.gif")
                     with col3:
                         st.write('')
-                    recs = get_recs(str(text), N=int(number), mean=False)
-                    recs50 = get_recs(str(text), N=50, mean=False)
+                    recs = get_recs(str(text), N=int(data.shape[0]), mean=False)
+                    recs50 = get_recs(str(text), N=50, mean=False) #вот здесь надо изменить про ввод количества желаемых программ, а потом просто выдавать топ 
                     gif_runner.empty()  
                     recs1 = recs[(recs['language'].isin(list(lang))) & (recs['country'].isin(list(location))) & (recs['on_site']==on_site) & (recs['format']==pace)  & (recs['tuition_EUR']>min(cost)) & (recs['tuition_EUR']<max(cost)) & (recs['duration_month']>min(dur)) & (recs['duration_month']<=max(dur))]
+                    recs1 = recs1.reset_index().iloc[:number,:]
                     if recs1.shape[0]!=0:
                         recs2 = pick_n_pretty(recs1)
                         df = recs2.style.background_gradient(
