@@ -210,7 +210,7 @@ def mfap_density_50(recs50, df=latlong): #try this function on the main page
 def sim_prog(df=progs, prog=None):
     df_one = df[df['Program1']==prog]
     return df_one.sort_values(by='cosine', ascending=False)
-#yes.... the code is suboptimal, but i don't care about this point now ;)
+#yes.... the code is suboptimal, but i don't care about image.pngs point now ;)
 def p2p_locs(latlong=latlong, uni_info=data, recs=[], N=5): #recs is the output of sim_progs #density map for similar universities
     recs[['Uni', 'Prog']] = recs['Program2'].str.split(': ', 1, expand=True)
     recs[['Uni1', 'Prog1']] = recs['Program1'].str.split(': ', 1, expand=True)
@@ -489,7 +489,9 @@ if page=='Найти программу🌍':
                         st.warning('Мы не смогли подобрать программы, соответствующие твоим требованиям, но просим ознакомиться с существующими в нашей базе ')
                         simple_output()
                 else: 
-                    st.write('This is an error') #Надо будет полностью дописать
+                    st.warning('Мы не смогли подобрать программы, соответствующие твоим требованиям, но просим ознакомиться с существующими в нашей базе ')
+                    simple_output()
+                    # st.write('This is an error') #Надо будет полностью дописать
 
             else: 
                 simple_output()
